@@ -33,6 +33,7 @@ dependencies:
   provider: ^6.0.1
   bitsdojo_window: ^0.1.1+1
   flutter_acrylic: ^0.1.0
+  msix: ^3.1.0
   fluent_ui:
     git: https://github.com/bdlukaa/fluent_ui.git
 
@@ -88,3 +89,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+msix_config:
+  display_name: ToolBox
+  publisher_display_name: ToolBox
+  identity_name: Tomspter.ToolBox
+  msix_version: 1.0.0.0
+  install_certificate: false
+  app_installer:
+    publish_folder_path: C:\Users\Administrator\Desktop\flutterDesktop
