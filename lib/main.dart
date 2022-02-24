@@ -2,6 +2,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:color_marked_board/screens/setting.dart';
 import 'package:color_marked_board/screens/video_points.dart';
 import 'package:color_marked_board/theme.dart';
+import 'package:dart_vlc/dart_vlc.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
 import 'package:provider/provider.dart';
@@ -10,11 +11,12 @@ import 'screens/inputs.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await flutter_acrylic.Window.initialize();
+  DartVLC.initialize();
   runApp(const MyApp());
   doWhenWindowReady(() {
     final win = appWindow;
     win.minSize = const Size(400, 400);
-    win.size = const Size(800, 800);
+    win.size = const Size(1200, 932);
     win.alignment = Alignment.center;
     win.title = "Tool Box";
     win.show();
