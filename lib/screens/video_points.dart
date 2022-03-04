@@ -3,50 +3,41 @@ import 'package:dio/dio.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:provider/provider.dart';
 import '../constant.dart';
 
-class ValueNotifierUrl extends ValueNotifier<String> {
-  ValueNotifierUrl(value) : super(value);
-}
-
-class VideoPoints extends StatefulWidget {
+class VideoPoints extends StatelessWidget {
   const VideoPoints({Key? key}) : super(key: key);
 
   @override
-  _VideoPointsState createState() => _VideoPointsState();
-}
-
-class _VideoPointsState extends State<VideoPoints> {
-  ValueNotifierUrl valueNotifierUrl = ValueNotifierUrl("");
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        ValueListenableBuilder<String>(
-          valueListenable: valueNotifierUrl,
-          builder: (BuildContext context, value, Widget? child) {
-            return VideoComponent(url: value);
-          },
-        )
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.center,
-        //   children: [
-        //     Button(child: const Text("播放视频"), onPressed: playVideo),
-        //     Button(child: const Text("关闭视频"), onPressed: stopVideo)
-        //   ],
-        // ),
-        const InputArea()
-      ],
-    );
+    return ChangeNotifierProvider(
+        create: (_) => GenerateUrl(),
+        builder: (context, child) {
+          return Column(
+            children: <Widget>[
+              Consumer<GenerateUrl>(
+                builder: (_, genUrl, child) {
+                  return VideoComponent(url: genUrl.getUrl);
+                },
+              ),
+              const InputArea()
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     Button(child: const Text("播放视频"), onPressed: playVideo),
+              //     Button(child: const Text("关闭视频"), onPressed: stopVideo)
+              //   ],
+              // ),
+            ],
+          );
+        });
   }
 }
 
-
-
 class VideoComponent extends StatefulWidget {
   const VideoComponent({Key? key, required this.url}) : super(key: key);
-  final String? url;
+  final String url;
 
   @override
   _VideoComponentState createState() => _VideoComponentState();
@@ -57,20 +48,18 @@ class _VideoComponentState extends State<VideoComponent> {
       Player(id: 0, videoDimensions: const VideoDimensions(640, 360));
 
   @override
-  void initState() {
-    super.initState();
-    player.open(Media.network(widget.url), autoStart: true)
+  void didUpdateWidget(VideoComponent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    player.open(Media.network(widget.url), autoStart: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 2.0,
-          child: Video(
-              player: player, height: 360, width: 640, showControls: false)),
-    );
+    return Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 2.0,
+        child: Video(
+            player: player, height: 360, width: 640, showControls: true));
   }
 }
 
@@ -87,7 +76,6 @@ class _InputAreaState extends State<InputArea> {
   String? cdnBoxValue;
   DateTime startTime = DateTime.now();
   DateTime endTime = DateTime.now();
-  ValueNotifierUrl vd = ValueNotifierUrl("");
 
   List<ComboboxItem<String>> _genComboboxItem(Map constantMap) {
     return constantMap.keys
@@ -151,7 +139,7 @@ class _InputAreaState extends State<InputArea> {
             onChanged: (v) => setState(() => endTime = v),
           ),
         ),
-        Button(child: const Text("提交"), onPressed: getPlayUrl)
+        Button(child: const Text("提交"), onPressed: () => getPlayUrl(context))
       ],
     );
   }
@@ -175,7 +163,8 @@ class _InputAreaState extends State<InputArea> {
     return body;
   }
 
-  void getPlayUrl() async {
+  void getPlayUrl(BuildContext context) async {
+    GenerateUrl generateUrl = Provider.of<GenerateUrl>(context, listen: false);
     var dio = Dio();
     dio.interceptors.add(LogInterceptor(responseBody: false));
     print(_submitForm());
@@ -187,9 +176,21 @@ class _InputAreaState extends State<InputArea> {
               headers: {'X-DeviceID': '1111'},
               contentType: Headers.formUrlEncodedContentType));
       print(res.data.toString());
-      vd.value = res.data['url'];
+      generateUrl.changeUrl(res.data['url']);
     } on DioError catch (e) {
       print(e.response);
     }
+  }
+}
+
+class GenerateUrl extends ChangeNotifier {
+  String _url = "";
+
+  String get getUrl => _url;
+
+  void changeUrl(newUrl) {
+    print(newUrl);
+    _url = newUrl;
+    notifyListeners();
   }
 }
